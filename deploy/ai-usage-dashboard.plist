@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- launchd LaunchAgent template — Topology A (Tailscale-only).
+     Runs the collector as the USER (not root) so it can read local creds
+     (~/.claude, ~/.codex, ~/.grok) for the consumer readers. Copy to:
+         ~/Library/LaunchAgents/ai-usage-dashboard.plist
+     then edit the paths below, and:
+         launchctl load ~/Library/LaunchAgents/ai-usage-dashboard.plist
+     Secrets are NOT placed here — they live in the age vault (.env.age), decrypted
+     at boot by config.ts. Only non-secret runtime env belongs in this file. -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.ai-usage-dashboard</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/npm</string>
+    <string>start</string>
+  </array>
+
+  <!-- EDIT: absolute path to this project checkout -->
+  <key>WorkingDirectory</key>
+  <string>/Users/you/Repository/ai-unified-usage-meter-dashboard</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOST</key>
+    <string>127.0.0.1</string>
+    <key>PORT</key>
+    <string>8787</string>
+    <!-- EDIT: point AGE_IDENTITY at your age key so the vault can be decrypted at boot. -->
+    <key>AGE_IDENTITY</key>
+    <string>/Users/you/.config/age/keys.txt</string>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/ai-usage-dashboard.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/ai-usage-dashboard.err.log</string>
+</dict>
+</plist>

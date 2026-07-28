@@ -1,0 +1,10 @@
+{
+  "data": [
+    {
+      "results": [
+        { "uncached_input_tokens": 900000, "cache_creation_input_tokens": 120000, "cache_read_input_tokens": 300000, "output_tokens": 260000 }
+      ]
+    }
+  ],
+  "has_more": false
+}

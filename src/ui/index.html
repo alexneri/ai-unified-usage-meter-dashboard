@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Usage Dashboard</title>
+    <meta name="theme-color" content="#0f1216" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AI Usage" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="header" id="header">
+      <div class="header__inner">
+        <div class="wordmark">
+          <span class="wordmark__brand">AI USAGE</span>
+          <span class="wordmark__sep" aria-hidden="true"></span>
+          <span class="wordmark__meta">personal board</span>
+        </div>
+        <div class="header__right">
+          <span class="link-status" id="link-status" data-state="unknown" aria-live="polite">
+            <span class="link-status__dot" aria-hidden="true"></span>
+            <span class="link-status__label" id="link-status-label">—</span>
+          </span>
+          <span class="updated" id="global-updated" aria-live="polite">updated —</span>
+          <button class="refresh" id="refresh" type="button" aria-label="Refresh snapshot" title="Re-read /api/snapshot (does not force a provider poll)">
+            <svg class="refresh__icon" width="17" height="17" viewBox="0 0 17 17" aria-hidden="true">
+              <path d="M 8.5 2.5 A 6 6 0 1 0 14.5 8.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+              <path d="M 11.4 0.6 L 14.9 2.6 L 11.4 4.6 Z" fill="currentColor" stroke="none"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice" id="notice" role="alert" hidden></div>
+
+    <form class="login" id="login" hidden aria-label="Collector sign-in">
+      <label class="login__label" for="login-pw">Collector password</label>
+      <div class="login__row">
+        <input
+          class="login__input"
+          id="login-pw"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter dashboard password"
+        />
+        <button class="login__btn" id="login-btn" type="submit">Unlock</button>
+      </div>
+      <p class="login__hint" id="login-hint" aria-live="polite"></p>
+    </form>
+
+    <main class="board" id="board" aria-label="Provider usage board">
+      <div class="main">
+        <div class="hero-wrap" id="hero"></div>
+        <div class="side" id="side"></div>
+      </div>
+      <div class="recessed__head" id="recessed-head" hidden>
+        <span class="recessed__label" id="recessed-label">NO DATA · 0</span>
+        <span class="recessed__rule" aria-hidden="true"></span>
+      </div>
+      <div class="recessed" id="recessed"></div>
+      <footer class="footer">
+        <span class="footer__note">PERSONAL BOARD · POLLED EVERY 60S</span>
+        <button class="footer__reset" id="order-reset" type="button" hidden title="Clear your custom tile order and return to automatic pressure-ranking">custom order · reset</button>
+        <span class="footer__version" id="footer-version" aria-label="Build version"></span>
+      </footer>
+    </main>
+
+    <!-- Dumb display: fetches only /api/snapshot. Holds no provider key. -->
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

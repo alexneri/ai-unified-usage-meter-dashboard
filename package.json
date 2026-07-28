@@ -1,0 +1,33 @@
+{
+  "name": "ai-unified-usage-meter-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "A unified dashboard for AI usage and spend across providers — trusted local collector (Hono + TypeScript) + key-free web UI.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run build:ui && tsx watch src/index.ts",
+    "start": "npm run build:ui && tsx src/index.ts",
+    "build:ui": "node scripts/build-ui.mjs",
+    "build:web": "node scripts/export-static-ui.mjs",
+    "build": "npm run typecheck && npm run build:ui",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "secret-scan": "bash scripts/secret-scan.sh"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

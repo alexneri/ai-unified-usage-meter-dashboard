@@ -1,0 +1,18 @@
+{
+  "ResponseMetadata": {
+    "RequestId": "EXAMPLE0000000000000000000000000000",
+    "Action": "GetCodingPlanUsage",
+    "Version": "2024-01-01",
+    "Service": "ark",
+    "Region": "ap-southeast-1"
+  },
+  "Result": {
+    "Status": "Running",
+    "UpdateTimestamp": 1785196499,
+    "QuotaUsage": [
+      { "Level": "session", "Percent": 16.784210447761193, "ResetTimestamp": 1785212927 },
+      { "Level": "weekly", "Percent": 2.81135525, "ResetTimestamp": 1785686400 },
+      { "Level": "monthly", "Percent": 1.405677625, "ResetTimestamp": 1787932799 }
+    ]
+  }
+}

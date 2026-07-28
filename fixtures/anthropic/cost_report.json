@@ -1,0 +1,7 @@
+{
+  "data": [
+    { "starting_at": "2026-07-19T00:00:00Z", "results": [{ "amount": "2.35", "currency": "USD" }] },
+    { "starting_at": "2026-07-20T00:00:00Z", "results": [{ "amount": "3.10", "currency": "USD" }] }
+  ],
+  "has_more": false
+}

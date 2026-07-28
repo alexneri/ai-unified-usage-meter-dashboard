@@ -1,0 +1,14 @@
+{
+  "daily": [
+    { "date": "2026-07-19", "totalTokens": 1250000, "totalCost": 3.21 },
+    { "date": "2026-07-20", "totalTokens": 980000, "totalCost": 2.44 }
+  ],
+  "totals": {
+    "inputTokens": 1500000,
+    "outputTokens": 430000,
+    "cacheCreationTokens": 200000,
+    "cacheReadTokens": 100000,
+    "totalTokens": 2230000,
+    "totalCost": 5.65
+  }
+}

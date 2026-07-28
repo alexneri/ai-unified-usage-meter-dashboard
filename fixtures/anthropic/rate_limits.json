@@ -1,0 +1,5 @@
+{
+  "data": [
+    { "model": "claude-sonnet-4-6", "requests_per_minute": 4000, "input_tokens_per_minute": 400000, "output_tokens_per_minute": 80000 }
+  ]
+}

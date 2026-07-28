@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/export-static-ui.mjs",
+  "outputDirectory": "dist/web",
+  "installCommand": "npm ci",
+  "framework": null,
+  "cleanUrls": true
+}

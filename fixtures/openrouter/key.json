@@ -1,0 +1,13 @@
+{
+  "data": {
+    "label": "example-key (read-only)",
+    "usage": 12.5,
+    "limit": 20,
+    "limit_remaining": 7.5,
+    "is_free_tier": false,
+    "rate_limit": {
+      "requests": 40,
+      "interval": "10s"
+    }
+  }
+}

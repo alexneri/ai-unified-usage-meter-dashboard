@@ -1,0 +1,5 @@
+{
+  "primary_window": { "used_percent": 8.0, "window_minutes": 300, "resets_in_seconds": 9000 },
+  "secondary_window": { "used_percent": 52.0, "window_minutes": 10080, "reset_at": "2026-07-26T00:00:00.000Z" },
+  "credits": { "balance": 4.75, "currency": "USD" }
+}
