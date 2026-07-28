@@ -20,7 +20,7 @@
     "secret-scan": "bash scripts/secret-scan.sh"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.0",
+    "@hono/node-server": "^2.0.10",
     "hono": "^4.7.0"
   },
   "devDependencies": {
