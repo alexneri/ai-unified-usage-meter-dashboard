@@ -94,6 +94,16 @@ Secrets live in a local `.env` (gitignored) or an [age](https://age-encryption.o
 vault (`.env.age`, see `scripts/vault.sh`). **Never commit real keys** — the
 `secret-scan` gate and CI guard against it.
 
+### Deploy with Cursor or Claude Code
+
+Hand your AI coding agent [`DEPLOY_PROMPT.md`](./DEPLOY_PROMPT.md) — a phase-by-phase
+playbook (preflight → configure providers → run & verify → pick auth/topology →
+durable service → secret hygiene) with an acceptance checklist and the common
+gotchas baked in.
+
+- **Claude Code:** run `claude`, then `read DEPLOY_PROMPT.md and deploy this repo` — or paste the file's contents.
+- **Cursor:** reference it in chat with `@DEPLOY_PROMPT.md deploy this repo`, or paste the contents.
+
 ## How it fits together
 
 See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the collector pipeline, the
