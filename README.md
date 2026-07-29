@@ -8,7 +8,9 @@ key-free web UI.
 It answers two questions at a glance: *how much have I spent across everything*
 and *how close am I to a limit right now.*
 
-<!-- Add a screenshot here: docs/screenshot.png -->
+![The AI Unified Usage Meter Dashboard — one card per provider, each with a confidence chip and freshness badge](docs/screenshot.png)
+
+<sub>Demo data. Official providers (OpenRouter, OpenAI, BytePlus) and best-effort unofficial readers (Claude Code, Grok) on one board; the hero shows a near-cap gauge, and an unconfigured provider degrades to an honest "waiting" strip.</sub>
 
 ## Why it's built in two halves
 
