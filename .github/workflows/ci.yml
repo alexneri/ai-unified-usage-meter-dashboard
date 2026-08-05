@@ -17,4 +17,6 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run secret-scan
+      - run: npm run build:ui
+      - run: npm run build:web
+      - run: npm run leak-gate
