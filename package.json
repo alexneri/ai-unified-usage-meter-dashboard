@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "secret-scan": "bash scripts/secret-scan.sh"
+    "secret-scan": "bash scripts/secret-scan.sh",
+    "leak-gate": "bash scripts/leak-gate.sh"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.10",
