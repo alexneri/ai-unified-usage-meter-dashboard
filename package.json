@@ -21,13 +21,13 @@
     "leak-gate": "bash scripts/leak-gate.sh"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.12",
-    "hono": "^4.13.0"
+    "@hono/node-server": "^2.1.1",
+    "hono": "^4.13.2"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
-    "esbuild": "^0.28.1",
-    "tsx": "^4.19.0",
+    "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }
