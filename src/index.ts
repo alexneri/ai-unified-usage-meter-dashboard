@@ -13,6 +13,7 @@ import { redact } from './core/normalize.js';
 import { PollingScheduler } from './core/scheduler.js';
 import { registerAll } from './providers/registry.js';
 import { loadConfig } from './config.js';
+import { HistoryCollector } from './core/history.js';
 
 const log = (msg: string) => console.log(`[collector] ${redact(msg)}`);
 
@@ -26,6 +27,13 @@ const scheduler = new PollingScheduler({
   log,
 });
 registerAll((p) => scheduler.register(p), (id) => config.hasCredentials(id));
+
+// Usage & cost history (ccusage daily) — its own background poller, kept out of the
+// ProviderSnapshot pipeline because the payload shape differs (§4 invariant).
+const history = new HistoryCollector({
+  persistPath: resolve(process.cwd(), '.data/history.json'),
+  log,
+});
 
 const UI_DIR = resolve(process.cwd(), 'src/ui');
 const DIST_UI_DIR = resolve(process.cwd(), 'dist/ui');
@@ -67,6 +75,7 @@ app.use('*', async (c, next) => {
     path === '/api/login' ||
     path === '/styles.css' ||
     path === '/app.js' ||
+    path === '/history.js' ||
     path === '/favicon.png' ||
     path === '/apple-touch-icon.png' ||
     path === '/icon-192.png' ||
@@ -104,6 +113,10 @@ app.get('/api/snapshot', async (c) => {
   return c.json(snapshots);
 });
 
+// --- Auth-gated usage & cost history. Read-through from the collector's last-good
+// computation; NO subprocess on the request path (§7 parity with /api/snapshot).
+app.get('/api/usage', (c) => c.json(history.get()));
+
 // --- Static UI (dumb display).
 app.get('/', async (c) => c.html(await readText(resolve(UI_DIR, 'index.html'))));
 app.get('/styles.css', async (c) => {
@@ -113,6 +126,13 @@ app.get('/styles.css', async (c) => {
 app.get('/app.js', async (c) => {
   c.header('content-type', 'text/javascript; charset=utf-8');
   return c.body(await readText(resolve(DIST_UI_DIR, 'app.js')));
+});
+
+// --- Usage & cost history screen (additive; the main board is unchanged).
+app.get('/history', async (c) => c.html(await readText(resolve(UI_DIR, 'history.html'))));
+app.get('/history.js', async (c) => {
+  c.header('content-type', 'text/javascript; charset=utf-8');
+  return c.body(await readText(resolve(DIST_UI_DIR, 'history.js')));
 });
 
 // Bookmark / home-screen icons (must stay unauthenticated so Safari can fetch them).
@@ -179,6 +199,13 @@ scheduler
   .tick()
   .catch((e) => log(`initial tick failed: ${e instanceof Error ? e.message : String(e)}`))
   .finally(() => scheduler.start());
+
+// Prime usage history from the last-good file, refresh once, then poll in background.
+history
+  .load()
+  .then(() => history.refresh())
+  .catch((e) => log(`initial history load failed: ${e instanceof Error ? e.message : String(e)}`))
+  .finally(() => history.start());
 
 serve({ fetch: app.fetch, hostname: config.host, port: config.port }, (info) => {
   log(`listening on http://${config.host}:${info.port}  (auth: ${config.authMode})`);

@@ -25,22 +25,25 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 mkdirSync(outDir, { recursive: true });
 copyFileSync(resolve(uiDir, 'styles.css'), resolve(outDir, 'styles.css'));
 copyFileSync(resolve(distUi, 'app.js'), resolve(outDir, 'app.js'));
+copyFileSync(resolve(distUi, 'history.js'), resolve(outDir, 'history.js'));
 
 // iOS bookmark / PWA icons (generated instrument-gauge mark)
 for (const name of ['apple-touch-icon.png', 'favicon.png', 'icon-192.png', 'icon-512.png']) {
   copyFileSync(resolve(uiDir, name), resolve(outDir, name));
 }
 
-const htmlIn = readFileSync(resolve(uiDir, 'index.html'), 'utf8');
 const cfgJson = JSON.stringify({ snapshotBase });
 // Escape </script> in case a pathological URL ever contains it.
 const safeCfg = cfgJson.replace(/</g, '\\u003c');
 const inject = `    <script>window.__AUD_CONFIG__=${safeCfg};</script>\n`;
-const htmlOut = htmlIn.includes('</head>')
-  ? htmlIn.replace('</head>', `${inject}  </head>`)
-  : `${inject}${htmlIn}`;
+const injectConfig = (html) =>
+  html.includes('</head>') ? html.replace('</head>', `${inject}  </head>`) : `${inject}${html}`;
 
-writeFileSync(resolve(outDir, 'index.html'), htmlOut, 'utf8');
+// Both the board and the history screen get the same snapshotBase injection.
+for (const page of ['index.html', 'history.html']) {
+  const htmlIn = readFileSync(resolve(uiDir, page), 'utf8');
+  writeFileSync(resolve(outDir, page), injectConfig(htmlIn), 'utf8');
+}
 
 console.log(
   snapshotBase
