@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Usage — cost &amp; history</title>
+    <meta name="theme-color" content="#0f1216" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AI Usage" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header__inner">
+        <div class="wordmark">
+          <a class="wordmark__back" href="/" aria-label="Back to the board" title="Back to the board">←</a>
+          <span class="wordmark__brand">AI USAGE</span>
+          <span class="wordmark__sep" aria-hidden="true"></span>
+          <span class="wordmark__meta">cost &amp; history</span>
+        </div>
+        <div class="header__right">
+          <span class="updated" id="history-updated" aria-live="polite">updated —</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice" id="notice" role="alert" hidden></div>
+
+    <main class="history" id="history" aria-label="AI usage cost &amp; history">
+      <section class="hist-tiles" id="history-tiles" aria-label="Summary"></section>
+
+      <section class="hist-chart-card">
+        <div class="hist-chart-head">
+          <h2 class="hist-h2" id="chart-title">Daily estimated spend</h2>
+          <div class="hist-toggles">
+            <div class="hist-toggle" role="group" aria-label="Chart metric">
+              <button class="hist-toggle__btn is-on" id="metric-cost" type="button" aria-pressed="true">Cost</button>
+              <button class="hist-toggle__btn" id="metric-tokens" type="button" aria-pressed="false">Tokens</button>
+            </div>
+            <div class="hist-toggle" role="group" aria-label="Chart mode">
+              <button class="hist-toggle__btn is-on" id="mode-daily" type="button" aria-pressed="true">Daily</button>
+              <button class="hist-toggle__btn" id="mode-cumulative" type="button" aria-pressed="false">Cumulative</button>
+            </div>
+          </div>
+        </div>
+        <div class="hist-chart" id="history-chart"></div>
+        <div class="hist-axis" id="history-axis"></div>
+      </section>
+
+      <section class="hist-models-card">
+        <h2 class="hist-h2">By model</h2>
+        <div class="hist-table-wrap">
+          <table class="hist-table" id="history-models" aria-label="Usage by model"></table>
+        </div>
+      </section>
+
+      <p class="hist-disclaimer">
+        Costs are <strong>ccusage estimates at published API list prices</strong> — reconstructed from local
+        agent logs. This is a counterfactual (&ldquo;what this usage would have cost at API rates&rdquo;), not a
+        bill and not what a subscription charged. Rows with no public price show&nbsp;$0.
+      </p>
+
+      <footer class="footer">
+        <span class="footer__note">PERSONAL BOARD · USAGE HISTORY</span>
+        <span class="footer__version" id="footer-version" aria-label="Build version"></span>
+      </footer>
+    </main>
+
+    <!-- Dumb display: fetches only /api/usage. Holds no provider key. -->
+    <script type="module" src="/history.js"></script>
+  </body>
+</html>

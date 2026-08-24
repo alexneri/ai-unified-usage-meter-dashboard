@@ -33,10 +33,10 @@ const date = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
 const version = `v${pkg.version} · ${shortSha()} · ${date}`;
 
 await build({
-  entryPoints: [resolve(root, 'src/ui/app.ts')],
+  entryPoints: [resolve(root, 'src/ui/app.ts'), resolve(root, 'src/ui/history.ts')],
   bundle: true,
   format: 'esm',
-  outfile: resolve(root, 'dist/ui/app.js'),
+  outdir: resolve(root, 'dist/ui'),
   logLevel: 'warning',
   define: { __APP_VERSION__: JSON.stringify(version) },
 });

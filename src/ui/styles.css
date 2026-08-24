@@ -1051,3 +1051,240 @@ body.is-reordering {
     transition: none;
   }
 }
+
+/* ============================================================================
+   Usage & cost history screen (additive; board styles above are untouched)
+   ========================================================================== */
+
+.wordmark__back {
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 8px 2px 0;
+  transition: color 0.15s ease;
+}
+.wordmark__back:hover {
+  color: var(--text);
+}
+
+.footer__link {
+  color: var(--quiet);
+  text-decoration: none;
+  font: 500 11px/1 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s ease;
+}
+.footer__link:hover {
+  color: var(--acc);
+}
+
+.history {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* summary tiles */
+.hist-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 10px;
+}
+.hist-tile {
+  background: var(--side);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hist-tile--accent {
+  border-color: color-mix(in srgb, var(--acc) 45%, var(--edge));
+  background: color-mix(in srgb, var(--acc) 8%, var(--side));
+}
+.hist-tile__label {
+  font: 600 10.5px/1.2 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+.hist-tile__value {
+  font: 500 24px/1 var(--font-num);
+  color: var(--text);
+}
+.hist-tile--accent .hist-tile__value {
+  color: var(--acc);
+}
+.hist-tile__sub {
+  font: 400 11px/1.3 var(--font-ui);
+  color: var(--mute);
+}
+
+/* chart + models cards */
+.hist-chart-card,
+.hist-models-card {
+  background: var(--recessed);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+}
+.hist-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.hist-h2 {
+  font: 600 13px/1 var(--font-ui);
+  letter-spacing: 0.03em;
+  color: var(--dim);
+  margin: 0;
+}
+.hist-toggle {
+  display: inline-flex;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.hist-toggle__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--quiet);
+  font: 500 11px/1 var(--font-ui);
+  letter-spacing: 0.03em;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.hist-toggle__btn.is-on {
+  background: var(--acc);
+  color: #10130f;
+}
+
+.hist-chart {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+}
+.hist-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hist-grid {
+  stroke: var(--hairline);
+  stroke-width: 1;
+}
+.hist-bar {
+  fill: var(--acc);
+  transition: opacity 0.15s ease;
+}
+.hist-bar:hover {
+  opacity: 0.72;
+}
+.hist-peak {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font: 400 10.5px/1 var(--font-num);
+  color: var(--mute);
+}
+.hist-empty {
+  color: var(--mute);
+  font: 400 13px/1.4 var(--font-ui);
+  padding: 20px 4px;
+}
+.hist-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.hist-axis__label {
+  font: 400 10.5px/1 var(--font-num);
+  color: var(--mute);
+}
+
+/* by-model table */
+.hist-table-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+}
+.hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 12.5px/1.2 var(--font-num);
+}
+.hist-th {
+  font: 600 10px/1 var(--font-ui);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--edge);
+  white-space: nowrap;
+}
+.hist-th--name {
+  text-align: left;
+}
+.hist-th--num {
+  text-align: right;
+}
+.hist-td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--dim);
+  white-space: nowrap;
+}
+.hist-td--name {
+  text-align: left;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 500;
+}
+.hist-td--num {
+  text-align: right;
+}
+.hist-td--total {
+  color: var(--text);
+}
+
+.hist-disclaimer {
+  font: 400 11.5px/1.5 var(--font-ui);
+  color: var(--mute);
+  margin: 0;
+  padding: 0 2px;
+}
+.hist-disclaimer strong {
+  color: var(--quiet);
+  font-weight: 600;
+}
+
+/* chart mode toggles (metric + daily/cumulative) */
+.hist-toggles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+/* cumulative line + area */
+.hist-area {
+  fill: color-mix(in srgb, var(--acc) 16%, transparent);
+  stroke: none;
+}
+.hist-line {
+  stroke: var(--acc);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.hist-dot {
+  fill: var(--acc);
+}
