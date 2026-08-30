@@ -7,6 +7,18 @@ onward this file is maintained automatically by
 [release-please](https://github.com/googleapis/release-please) from
 [Conventional Commits](https://www.conventionalcommits.org/) — see `RELEASING.md`.
 
+## [0.2.1](https://github.com/alexneri/ai-unified-usage-meter-dashboard/compare/v0.2.0...v0.2.1) (2026-08-30)
+
+
+### Bug Fixes
+
+* **history:** durable ledger so cumulative spend stops decaying (port [#15](https://github.com/alexneri/ai-unified-usage-meter-dashboard/issues/15)) ([#21](https://github.com/alexneri/ai-unified-usage-meter-dashboard/issues/21)) ([63a431c](https://github.com/alexneri/ai-unified-usage-meter-dashboard/commit/63a431cb7a6bbd6b7f2dd74a4600e84ff1b29e2c))
+
+
+### Build System & Dependencies
+
+* **deps:** Bump the minor-and-patch group across 1 directory with 6 updates ([#19](https://github.com/alexneri/ai-unified-usage-meter-dashboard/issues/19)) ([55ad195](https://github.com/alexneri/ai-unified-usage-meter-dashboard/commit/55ad19537a02bc0c7ebf4e3c3c1f7c3c3454914c))
+
 ## [0.2.0](https://github.com/alexneri/ai-unified-usage-meter-dashboard/compare/v0.1.0...v0.2.0) (2026-08-24)
 
 

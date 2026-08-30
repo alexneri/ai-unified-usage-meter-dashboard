@@ -1,6 +1,6 @@
 {
   "name": "ai-unified-usage-meter-dashboard",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "license": "MIT",
   "description": "A unified dashboard for AI usage and spend across providers — trusted local collector (Hono + TypeScript) + key-free web UI.",
