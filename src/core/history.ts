@@ -1,21 +1,24 @@
-// HistoryCollector — background poller for the usage-history screen. Mirrors the
-// scheduler's contract (poll on a TTL, serve read-through last-good, survive a
-// restart via an atomic JSON file) but stays OUT of the ProviderSnapshot pipeline
-// because the history payload is a different shape (§4 snapshot invariant).
-//
-// The /api/usage handler does NO subprocess work on the request path — it returns
-// whatever this collector last computed, exactly like /api/snapshot reads cache.
+// HistoryCollector — background poller feeding the durable ledger. On each tick it
+// reads local ccusage, merges the highest-per-day values into the machine-keyed
+// ledger (see ledger.ts for the anti-decay rationale), persists it, and caches the
+// cross-machine aggregate. /api/usage serves that aggregate read-through — no
+// subprocess on the request path.
 
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
 import { redact } from './normalize.js';
 import type { UsageHistory } from './history-types.js';
 import { emptyHistory } from './history-types.js';
-import { mapCcusageDaily, runCcusageDaily, type CcusageDailyJson } from '../providers/local/ccusage-history.js';
+import { aggregateLedger, loadLedger, mergeMachineDays, saveLedger, type LedgerData } from './ledger.js';
+import {
+  mapCcusageDaily,
+  runCcusageDaily,
+  type CcusageDailyJson,
+} from '../providers/local/ccusage-history.js';
 
 export interface HistoryCollectorOptions {
-  /** Where last-good history is persisted (atomic). Gitignored (.data/…). */
-  persistPath: string;
+  /** Where the durable ledger is persisted (atomic). Gitignored (.data/…). */
+  ledgerPath: string;
+  /** This machine's id — the ledger slice this collector fills. */
+  machineId: string;
   /** Refresh cadence, ms. Default 15 min (matches the ccusage card TTL). */
   refreshMs?: number;
   /** Injected ccusage runner (tests). Defaults to the real subprocess. */
@@ -27,65 +30,62 @@ export interface HistoryCollectorOptions {
 }
 
 export class HistoryCollector {
+  private ledger: LedgerData | null = null;
   private latest: UsageHistory | null = null;
   private inFlight = false;
   private loaded = false;
   private timer: ReturnType<typeof setInterval> | null = null;
 
-  private readonly persistPath: string;
+  private readonly ledgerPath: string;
+  private readonly machineId: string;
   private readonly refreshMs: number;
   private readonly run: () => Promise<CcusageDailyJson>;
   private readonly now: () => number;
   private readonly log: (msg: string) => void;
 
   constructor(opts: HistoryCollectorOptions) {
-    this.persistPath = opts.persistPath;
+    this.ledgerPath = opts.ledgerPath;
+    this.machineId = opts.machineId;
     this.refreshMs = opts.refreshMs ?? 15 * 60 * 1000;
     this.run = opts.run ?? (() => runCcusageDaily());
     this.now = opts.now ?? (() => Date.now());
     this.log = (msg) => (opts.log ?? (() => {}))(redact(msg));
   }
 
-  /** Load persisted last-good history (best-effort) so a fresh boot serves data. */
+  /** Load the persisted ledger so a fresh boot already serves accumulated history. */
   async load(): Promise<void> {
     if (this.loaded) return;
     this.loaded = true;
-    try {
-      const raw = await readFile(this.persistPath, 'utf8');
-      const parsed = JSON.parse(raw) as UsageHistory;
-      if (parsed && Array.isArray(parsed.days) && parsed.totals) this.latest = parsed;
-    } catch {
-      // No file yet / unreadable — start empty. Not fatal.
-    }
+    this.ledger = await loadLedger(this.ledgerPath);
+    this.latest = aggregateLedger(this.ledger, new Date(this.now()).toISOString());
   }
 
-  /** Run ccusage, remap, store. Fail-soft: keep last-good on failure; only the
-   *  very first failure with no prior data surfaces an error history. */
+  /** Read local ccusage, merge into the ledger (anti-decay), persist, re-aggregate. */
   async refresh(): Promise<void> {
     if (this.inFlight) return;
     this.inFlight = true;
     try {
-      const json = await this.run();
-      const mapped = mapCcusageDaily(json, new Date(this.now()).toISOString());
-      if (mapped.error && this.latest && this.latest.days.length > 0) {
-        this.log(`history refresh error (kept last-good ${this.latest.days.length}d): ${mapped.error.message}`);
-        return;
+      if (!this.ledger) this.ledger = await loadLedger(this.ledgerPath);
+      const mapped = mapCcusageDaily(await this.run(), new Date(this.now()).toISOString());
+      if (mapped.error && mapped.days.length === 0) {
+        this.log(`history refresh: ccusage error (${mapped.error.message}); ledger kept`);
+      } else {
+        const changed = mergeMachineDays(this.ledger, this.machineId, mapped.days);
+        if (changed > 0) await saveLedger(this.ledgerPath, this.ledger);
+        this.log(`history: merged ${changed} day(s) for ${this.machineId}`);
       }
-      this.latest = mapped;
-      await this.persist();
-      this.log(`history refreshed: ${mapped.days.length}d, $${mapped.totals.cost.toFixed(2)} est`);
+      this.latest = aggregateLedger(this.ledger, new Date(this.now()).toISOString());
+      this.log(`history: ${this.latest.days.length}d, $${this.latest.totals.cost.toFixed(2)} cumulative`);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      if (!this.latest) {
-        this.latest = { ...emptyHistory(new Date(this.now()).toISOString()), error: { message: redact(message), retriable: true } };
-      }
-      this.log(`history refresh threw (kept last-good): ${message}`);
+      if (this.ledger) this.latest = aggregateLedger(this.ledger, new Date(this.now()).toISOString());
+      this.log(`history refresh threw (ledger kept): ${message}`);
     } finally {
       this.inFlight = false;
     }
   }
 
-  /** Read-through: last-good history, or an empty placeholder. Never subprocess. */
+  /** Read-through: the cross-machine aggregate, or an empty placeholder. */
   get(): UsageHistory {
     return this.latest ?? emptyHistory();
   }
@@ -98,14 +98,5 @@ export class HistoryCollector {
   stop(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-  }
-
-  private async persist(): Promise<void> {
-    if (!this.latest) return;
-    const json = JSON.stringify(this.latest, null, 2);
-    await mkdir(dirname(this.persistPath), { recursive: true });
-    const tmp = `${this.persistPath}.tmp`;
-    await writeFile(tmp, json, 'utf8');
-    await rename(tmp, this.persistPath);
   }
 }
