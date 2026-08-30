@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   extractDailyJson,
   mapCcusageDaily,
@@ -104,10 +104,15 @@ describe('runCcusageDaily (test injection seam)', () => {
   });
 });
 
-describe('HistoryCollector (fail-soft + read-through)', () => {
-  it('refreshes from an injected runner and serves read-through', async () => {
+describe('HistoryCollector (ledger-backed, fail-soft + read-through)', () => {
+  const LP = resolve(__dirname, '../.data/history-collector.test.json');
+  beforeEach(() => rmSync(LP, { force: true }));
+  afterAll(() => rmSync(LP, { force: true }));
+
+  it('refreshes from an injected runner and serves the aggregate read-through', async () => {
     const c = new HistoryCollector({
-      persistPath: resolve(__dirname, '../.data/history.test.json'),
+      ledgerPath: LP,
+      machineId: 'test',
       run: async () => daily,
       now: () => Date.parse('2026-08-04T00:00:00.000Z'),
     });
@@ -117,23 +122,47 @@ describe('HistoryCollector (fail-soft + read-through)', () => {
     expect(got.totals.cost).toBe(10);
   });
 
-  it('keeps last-good days when a later refresh fails', async () => {
+  it('never lowers a recorded day when a later read shrinks (anti-decay)', async () => {
     let call = 0;
     const c = new HistoryCollector({
-      persistPath: resolve(__dirname, '../.data/history.test.json'),
+      ledgerPath: LP,
+      machineId: 'test',
+      run: async () => {
+        call += 1;
+        // 2nd read simulates log pruning: same dates, cost/tokens collapsed.
+        return call === 1
+          ? daily
+          : { daily: (daily.daily ?? []).map((d) => ({ ...d, totalCost: 0, totalTokens: 0, modelBreakdowns: [] })) };
+      },
+    });
+    await c.refresh(); // full read
+    await c.refresh(); // pruned read must NOT lower the ledger
+    expect(c.get().totals.cost).toBe(10);
+    expect(c.get().days).toHaveLength(3);
+  });
+
+  it('keeps the ledger when a refresh throws', async () => {
+    let call = 0;
+    const c = new HistoryCollector({
+      ledgerPath: LP,
+      machineId: 'test',
       run: async () => {
         call += 1;
         if (call === 1) return daily;
         throw new Error('ccusage vanished');
       },
     });
-    await c.refresh(); // good
-    await c.refresh(); // throws → keep last-good
+    await c.refresh();
+    await c.refresh();
     expect(c.get().days).toHaveLength(3);
+    expect(c.get().totals.cost).toBe(10);
   });
 
   it('serves an empty placeholder before the first refresh', () => {
-    const c = new HistoryCollector({ persistPath: resolve(__dirname, '../.data/history.none.json') });
+    const c = new HistoryCollector({
+      ledgerPath: resolve(__dirname, '../.data/none.test.json'),
+      machineId: 'test',
+    });
     expect(c.get().days).toEqual([]);
     expect(c.get().totals.cost).toBe(0);
   });

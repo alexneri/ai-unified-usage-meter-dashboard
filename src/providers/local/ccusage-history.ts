@@ -7,13 +7,9 @@
 
 import { execFile } from 'node:child_process';
 import { ProviderError } from '../../core/normalize.js';
-import type {
-  UsageDay,
-  UsageHistory,
-  UsageModelStat,
-  UsageTotals,
-} from '../../core/history-types.js';
+import type { UsageDay, UsageHistory, UsageModelStat } from '../../core/history-types.js';
 import { zeroTotals } from '../../core/history-types.js';
+import { aggregateModels, totalsFrom } from '../../core/history-aggregate.js';
 
 /** The subset of `ccusage daily --json` we consume (tolerant of shape drift). */
 export interface CcusageModelBreakdown {
@@ -83,55 +79,6 @@ function mapDay(row: CcusageDailyRow): UsageDay {
     totalTokens,
     models,
   };
-}
-
-/** Fold all days' per-model rows into one window-wide list, desc by cost then tokens. */
-function aggregateModels(days: UsageDay[]): UsageModelStat[] {
-  const byModel = new Map<string, UsageModelStat>();
-  for (const day of days) {
-    for (const m of day.models) {
-      const acc = byModel.get(m.model) ?? {
-        model: m.model,
-        cost: 0,
-        inputTokens: 0,
-        outputTokens: 0,
-        cacheCreationTokens: 0,
-        cacheReadTokens: 0,
-        totalTokens: 0,
-      };
-      acc.cost += m.cost;
-      acc.inputTokens += m.inputTokens;
-      acc.outputTokens += m.outputTokens;
-      acc.cacheCreationTokens += m.cacheCreationTokens;
-      acc.cacheReadTokens += m.cacheReadTokens;
-      acc.totalTokens += m.totalTokens;
-      byModel.set(m.model, acc);
-    }
-  }
-  return [...byModel.values()]
-    .map((m) => ({ ...m, cost: round(m.cost) }))
-    .sort((a, b) => b.cost - a.cost || b.totalTokens - a.totalTokens || a.model.localeCompare(b.model));
-}
-
-function totalsFrom(days: UsageDay[]): UsageTotals {
-  const t = zeroTotals();
-  for (const d of days) {
-    t.cost += d.cost;
-    t.inputTokens += d.inputTokens;
-    t.outputTokens += d.outputTokens;
-    t.cacheCreationTokens += d.cacheCreationTokens;
-    t.cacheReadTokens += d.cacheReadTokens;
-    t.totalTokens += d.totalTokens;
-  }
-  t.cost = round(t.cost);
-  t.processedTokens = t.inputTokens + t.outputTokens + t.cacheCreationTokens + t.cacheReadTokens;
-  t.freshInputTokens = t.inputTokens + t.cacheCreationTokens;
-  t.cacheReadShare = t.processedTokens > 0 ? t.cacheReadTokens / t.processedTokens : 0;
-  t.cacheLeverage = t.freshInputTokens > 0 ? t.cacheReadTokens / t.freshInputTokens : 0;
-  t.days = days.length;
-  t.firstDate = days.length ? (days[0] as UsageDay).date : null;
-  t.lastDate = days.length ? (days[days.length - 1] as UsageDay).date : null;
-  return t;
 }
 
 /**

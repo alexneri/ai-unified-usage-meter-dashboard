@@ -4,6 +4,7 @@
 // liveness. The auth gate wraps the UI and /api/snapshot; /api/health stays open.
 
 import { readFile } from 'node:fs/promises';
+import { hostname } from 'node:os';
 import { resolve } from 'node:path';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
@@ -31,7 +32,8 @@ registerAll((p) => scheduler.register(p), (id) => config.hasCredentials(id));
 // Usage & cost history (ccusage daily) — its own background poller, kept out of the
 // ProviderSnapshot pipeline because the payload shape differs (§4 invariant).
 const history = new HistoryCollector({
-  persistPath: resolve(process.cwd(), '.data/history.json'),
+  ledgerPath: resolve(process.cwd(), '.data/ledger.json'),
+  machineId: process.env.USAGE_MACHINE_ID || hostname().replace(/\.local$/, '') || 'local',
   log,
 });
 
