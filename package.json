@@ -21,7 +21,7 @@
     "leak-gate": "bash scripts/leak-gate.sh"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
+    "@hono/node-server": "^2.1.3",
     "hono": "^4.13.3"
   },
   "devDependencies": {
